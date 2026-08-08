@@ -13,20 +13,24 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-
-    - name: Install PWABuilder CLI
-      run: npm install -g @pwabuilder/cli@1.0.3
-
-    - name: Build MSIX Package
+    - name: Download & Build MSIX via PWABuilder API
+      shell: powershell
       run: |
-        pwa-builder package https://crewmate-rush-space-escape-runner.ai.studio --platform windows --packageId "EachoneInformationChannel.CrewmateRushSpaceEscapeR" --publisherId "CN=CF437CC1-5A6E-4F84-B45D-A39F3D1BFEB6" --publisherDisplayName "Eachone Information Channel" --appName "Crewmate Rush Space Escape Runner" --output ./msix-output
+        $body = @{
+            siteUrl = "https://crewmate-rush-space-escape-runner.ai.studio"
+            packageId = "EachoneInformationChannel.CrewmateRushSpaceEscapeR"
+            publisherId = "CN=CF437CC1-5A6E-4F84-B45D-A39F3D1BFEB6"
+            publisherDisplayName = "Eachone Information Channel"
+            appName = "Crewmate Rush Space Escape Runner"
+            version = "1.0.0.0"
+        } | ConvertTo-Json
+
+        New-Item -ItemType Directory -Force -Path ./msix-output
+        
+        $response = Invoke-RestMethod -Uri "https://pwabuilder-win-chromium-build-api.azurewebsites.net/msix/generatezip" -Method Post -Body $body -ContentType "application/json" -OutFile "./msix-output/Store-Ready-MSIX.zip"
 
     - name: Upload Package Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Store-Ready-MSIX
-        path: ./msix-output/*
+        path: ./msix-output/Store-Ready-MSIX.zip
