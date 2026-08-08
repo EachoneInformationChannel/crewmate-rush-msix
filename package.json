@@ -1,0 +1,35 @@
+{
+  "name": "crewmate-rush-space-escape-runner",
+  "version": "1.0.0",
+  "description": "Crewmate Rush Space Escape Runner",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build": "electron-builder --win appx"
+  },
+  "build": {
+    "appId": "EachoneInformationChannel.CrewmateRushSpaceEscapeR",
+    "productName": "Crewmate Rush Space Escape Runner",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": ["appx"],
+      "icon": "build/icon.ico"
+    },
+    "appx": {
+      "applicationId": "App",
+      "identityName": "EachoneInformationChannel.CrewmateRushSpaceEscapeR",
+      "publisher": "CN=CF437CC1-5A6E-4F84-B45D-A39F3D1BFEB6",
+      "publisherDisplayName": "Eachone Information Channel",
+      "displayName": "Crewmate Rush Space Escape Runner",
+      "backgroundColor": "transparent",
+      "languages": ["en-US"],
+      "showNameOnTiles": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^30.0.0",
+    "electron-builder": "^24.13.3"
+  }
+}
