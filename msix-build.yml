@@ -13,17 +13,18 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
+    - name: Generate Windows MSIX Package
+      uses: pwabuilder/pwa-action@v1.0.8
       with:
-        node-version: '18'
-
-    - name: Build MSIX Package
-      run: |
-        npx @pwabuilder/cli windows https://crewmate-rush-space-escape-runner.ai.studio --packageId "EachoneInformationChannel.CrewmateRushSpaceEscapeR" --publisherId "CN=CF437CC1-5A6E-4F84-B45D-A39F3D1BFEB6" --publisherDisplayName "Eachone Information Channel" --appName "Crewmate Rush Space Escape Runner" --output ./msix-output
+        page-url: 'https://crewmate-rush-space-escape-runner.ai.studio'
+        platform: 'windows'
+        package-id: 'EachoneInformationChannel.CrewmateRushSpaceEscapeR'
+        publisher-id: 'CN=CF437CC1-5A6E-4F84-B45D-A39F3D1BFEB6'
+        publisher-display-name: 'Eachone Information Channel'
+        app-name: 'Crewmate Rush Space Escape Runner'
 
     - name: Upload Package Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Store-Ready-MSIX
-        path: ./msix-output/*
+        path: './*.msix*'
