@@ -13,7 +13,7 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Download & Build MSIX via PWABuilder API
+    - name: Build MSIX via Official PWABuilder API
       shell: powershell
       run: |
         $body = @{
@@ -27,7 +27,8 @@ jobs:
 
         New-Item -ItemType Directory -Force -Path ./msix-output
         
-        $response = Invoke-RestMethod -Uri "https://pwabuilder-win-chromium-build-api.azurewebsites.net/msix/generatezip" -Method Post -Body $body -ContentType "application/json" -OutFile "./msix-output/Store-Ready-MSIX.zip"
+        $Uri = "https://pwabuilder-windows-chromium-api.azurewebsites.net/msix/generatezip"
+        Invoke-RestMethod -Uri $Uri -Method Post -Body $body -ContentType "application/json" -OutFile "./msix-output/Store-Ready-MSIX.zip"
 
     - name: Upload Package Artifact
       uses: actions/upload-artifact@v4
