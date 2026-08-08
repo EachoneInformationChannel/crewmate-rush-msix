@@ -1,0 +1,32 @@
+name: Generate Microsoft Store MSIX Package
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-msix:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install PWABuilder CLI
+      run: npm install -g @pwabuilder/cli
+
+    - name: Build MSIX Package
+      run: |
+        pwa-builder package https://crewmate-rush-space-escape-runner.ai.studio -p windows --packageId "EachoneInformationChannel.CrewmateRushSpaceEscapeR" --publisherId "CN=CF437CC1-5A6E-4F84-B45D-A39F3D1BFEB6" --publisherDisplayName "Eachone Information Channel" --appName "Crewmate Rush Space Escape Runner" -o ./msix-output
+
+    - name: Upload Package Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Store-Ready-MSIX
+        path: ./msix-output/*
