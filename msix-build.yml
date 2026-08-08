@@ -1,4 +1,4 @@
-name: Generate Microsoft Store MSIX Package
+name: Build MSIX Package
 
 on:
   push:
@@ -6,77 +6,27 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-msix:
+  build:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Windows SDK Tools
-      uses: microsoft/setup-msbuild@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-    - name: Native Windows Build
-      shell: powershell
-      run: |
-        New-Item -ItemType Directory -Force -Path ./package
-        New-Item -ItemType Directory -Force -Path ./msix-output
+      - name: Install dependencies
+        run: npm install
 
-        # AppxManifest.xml for Windows Web App
-        $manifest = @"
-        <?xml version="1.0" encoding="utf-8"?>
-        <Package
-          xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
-          xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10">
-          
-          <Identity
-            Name="EachoneInformationChannel.CrewmateRushSpaceEscapeR"
-            Publisher="CN=CF437CC1-5A6E-4F84-B45D-A39F3D1BFEB6"
-            Version="1.0.0.0" />
+      - name: Build Appx/MSIX
+        run: npx electron-builder --win appx
 
-          <Properties>
-            <DisplayName>Crewmate Rush Space Escape Runner</DisplayName>
-            <PublisherDisplayName>Eachone Information Channel</PublisherDisplayName>
-            <Logo>Square150x150Logo.png</Logo>
-          </Properties>
-
-          <Dependencies>
-            <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.17763.0" MaxVersionTested="10.0.22621.0" />
-          </Dependencies>
-
-          <Resources>
-            <Resource Language="en-us" />
-          </Resources>
-
-          <Applications>
-            <Application Id="App" StartPage="https://crewmate-rush-space-escape-runner.ai.studio">
-              <uap:VisualElements
-                DisplayName="Crewmate Rush Space Escape Runner"
-                Description="Crewmate Rush Space Escape Runner"
-                BackgroundColor="transparent"
-                Square150x150Logo="Square150x150Logo.png"
-                Square44x44Logo="Square44x44Logo.png">
-              </uap:VisualElements>
-            </Application>
-          </Applications>
-        </Package>
-        "@
-
-        $manifest | Out-File -FilePath ./package/AppxManifest.xml -Encoding utf8
-
-        # Create required placeholder PNG icons
-        Add-Type -AssemblyName System.Drawing
-        $bmp150 = New-Object System.Drawing.Bitmap(150, 150)
-        $bmp150.Save("./package/Square150x150Logo.png", [System.Drawing.Imaging.ImageFormat]::Png)
-        $bmp44 = New-Object System.Drawing.Bitmap(44, 44)
-        $bmp44.Save("./package/Square44x44Logo.png", [System.Drawing.Imaging.ImageFormat]::Png)
-
-        # Target explicit x64 makeappx.exe binary
-        $makeappx = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\makeappx.exe" | Select-Object -First 1 -ExpandProperty FullName
-        & $makeappx pack /d ./package /p ./msix-output/CrewmateRushSpaceEscapeRunner.msix /l
-
-    - name: Upload Package Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: Store-Ready-MSIX
-        path: ./msix-output/CrewmateRushSpaceEscapeRunner.msix
+      - name: Upload MSIX artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CrewmateRushSpaceEscapeRunner-MSIX
+          path: dist/*.appx
+          retention-days: 30
