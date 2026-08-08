@@ -13,13 +13,16 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v4
 
-    - name: Native Windows Build (No PWABuilder / No External API)
+    - name: Setup Windows SDK Tools
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Native Windows Build
       shell: powershell
       run: |
         New-Item -ItemType Directory -Force -Path ./package
         New-Item -ItemType Directory -Force -Path ./msix-output
 
-        # Create AppxManifest.xml for Windows Store Web App
+        # AppxManifest.xml for Windows Web App
         $manifest = @"
         <?xml version="1.0" encoding="utf-8"?>
         <Package
@@ -61,15 +64,15 @@ jobs:
 
         $manifest | Out-File -FilePath ./package/AppxManifest.xml -Encoding utf8
 
-        # Create default placeholder icons
+        # Create required placeholder PNG icons
         Add-Type -AssemblyName System.Drawing
         $bmp150 = New-Object System.Drawing.Bitmap(150, 150)
         $bmp150.Save("./package/Square150x150Logo.png", [System.Drawing.Imaging.ImageFormat]::Png)
         $bmp44 = New-Object System.Drawing.Bitmap(44, 44)
         $bmp44.Save("./package/Square44x44Logo.png", [System.Drawing.Imaging.ImageFormat]::Png)
 
-        # Locate MakeAppx.exe from Windows SDK & Compile MSIX
-        $makeappx = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Filter "makeappx.exe" -Recurse | Select-Object -First 1 -ExpandProperty FullName
+        # Target explicit x64 makeappx.exe binary
+        $makeappx = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin\*\x64\makeappx.exe" | Select-Object -First 1 -ExpandProperty FullName
         & $makeappx pack /d ./package /p ./msix-output/CrewmateRushSpaceEscapeRunner.msix /l
 
     - name: Upload Package Artifact
